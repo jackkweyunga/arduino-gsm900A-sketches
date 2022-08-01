@@ -1,5 +1,5 @@
 #include <SoftwareSerial.h>
-SoftwareSerial SIM900A(10,11);
+SoftwareSerial SIM900A(7,8); // Arduino Rx, Arduino Tx
 void setup()
 {
   SIM900A.begin(9600);   // Setting the baud rate of GSM Module  
@@ -23,13 +23,15 @@ void loop()
  if (SIM900A.available()>0)
    Serial.write(SIM900A.read());
 }
+
+
  void SendMessage()
 {
   Serial.println ("Sending Message");
   SIM900A.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
   delay(1000);
   Serial.println ("Set SMS Number");
-  SIM900A.println("AT+CMGS=\"+255735977324\"\r"); //Mobile phone number to send message
+  SIM900A.println("AT+CMGS=\"+255712111936\"\r"); //Mobile phone number to send message
   delay(1000);
   Serial.println ("Set SMS Content");
   SIM900A.println("Good morning, how are you doing? \n From gsm module. \n reply.");// Messsage content
