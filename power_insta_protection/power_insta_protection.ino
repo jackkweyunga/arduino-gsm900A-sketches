@@ -1,5 +1,5 @@
-#include "ZMPT101B.h"
-#include "ACS712.h"
+#include <ZMPT101B.h>
+#include <ACS712.h>
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 #include <SoftwareSerial.h>   
@@ -20,7 +20,7 @@ ZMPT101B voltageSensor(A0);
 
 // We have 5 amps version sensor connected to A1 pin of arduino
 // Replace with your version if necessary
-ACS712 currentSensor(ACS712_05B, A1);
+ACS712 currentSensor(A1);
 
 //RELAY SETUP
 int relayPin = 7;
@@ -58,7 +58,7 @@ void setup()
   delay(100);
   voltageSensor.setSensitivity(sensitivity);
   voltageSensor.calibrate();
-  currentSensor.calibrate();
+//  currentSensor.calibrate();
   Serial.println("Done!");
 
   //RELAY CONTROL
@@ -78,8 +78,8 @@ void setup()
   // calculate the length of number array
   phoneNumbersLength = sizeof(phoneNumbers) / sizeof(phoneNumbers[0]);
   Serial.println("Found "+ String(phoneNumbersLength) +" phone numbers");
-  sendSMS("testing ...");
-  // gprsSendData();  
+  //  sendSMS("testing ...");
+  //   gprsSendData();  
 }
 
 // main program loop
@@ -96,10 +96,10 @@ void loop()
   // as first argument to getVoltageAC and getCurrentAC() method, if necessary
 
   V = voltageSensor.getVoltageAC();
-  I = currentSensor.getCurrentAC();
+//  I = currentSensor.getCurrentAC();
 
   Serial.println(String("V = ") + V + " V");
-  Serial.println(String("I = ") + I + " A");
+//  Serial.println(String("I = ") + I + " A");
 
   //LCD POWER DISPLAY
 
@@ -123,8 +123,8 @@ void loop()
     lcd.print("OVER VOLTAGE");
     delay(5000);
     String message = "OVER VOLTAGE";
-    sendSMS(message);  // send sms for overvoltage
-    //gprsSendData();
+//    sendSMS(message);  // send sms for overvoltage
+    gprsSendData();
   }
   else if(V <= 200){
     //under voltage
@@ -136,8 +136,8 @@ void loop()
     lcd.print("UNDER VOLTAGE");
     delay(5000);
     String message = "UNDER VOLTAGE";
-    sendSMS(message);  // send sms for undervoltage
-    //gprsSendData();
+//    sendSMS(message);  // send sms for undervoltage
+    gprsSendData();
   }
   else{
     switchON();
@@ -221,14 +221,32 @@ void gprsSendData()
   // initialize http
   initHTTP();
 
+  Serial.println("HTTP initialized ...");
+  
   // sample line
   // Serial.println("AT+HTTPPARA=\"URL\",\"" + String(baseUrl) + "api/endpoint/?" +"par1=" + String(par1) + "&" + "par2=" + String(par2) + "/\"\\r\\n");
   
-  // SIM900A.println("AT+HTTPPARA=\"URL\",\"" + String(baseUrl) + "api/apiFaults/getAll/" + "\"");  // Set parameters for HTTP session !uncomment this if not testing 
-  SIM900A.println("AT+HTTPPARA=\"URL\",\"" + String(testUrl) + "\"");  // test url ( get request ) !comment this if not testing
+  SIM900A.println("AT+HTTPPARA=\"URL\",\"" + String(baseUrl) + "api/apiFaults/getAll/" + "\"");  // Set parameters for HTTP session !uncomment this if not testing 
+  // SIM900A.println("AT+HTTPPARA=\"URL\",\"" + String(testUrl) + "\"");  // test url ( get request ) !comment this if not testing
   ShowSerialData();
   delay(1000);
+
+  // For posting data, uncomment below.
+  //  Serial.print("AT+HTTPDATA=33,10000\\r\\n");
+  //  SIM900.println("AT+HTTPDATA=33,10000");  /* POST data of size 33 Bytes with maximum latency time of 10seconds for inputting the data*/ 
+  //  delay(2000);
+  //  ShowSerialData();
+    
+  //  Serial.print("api_key=C7JFHZY54GLCJY38&field1=1\\r\\n");  /* Data to be sent */
+  //  SIM900.println("api_key=C7JFHZY54GLCJY38&field1=1");
+  //  delay(5000);
   
+  //  SIM900.println("AT+HTTPACTION=1");  /* Start POST session */
+  //  ShowSerialData();
+  //  delay(3000);
+   
+
+  // For post data comment below
   SIM900A.println(F("AT+HTTPACTION=0"));  /* Start GET session */
   ShowSerialData();
   delay(3000);
