@@ -79,7 +79,7 @@ void setup()
   phoneNumbersLength = sizeof(phoneNumbers) / sizeof(phoneNumbers[0]);
   Serial.println("Found "+ String(phoneNumbersLength) +" phone numbers");
   //  sendSMS("testing ...");
-  //   gprsSendData();  
+  gprsSendData();  
 }
 
 // main program loop
@@ -96,10 +96,10 @@ void loop()
   // as first argument to getVoltageAC and getCurrentAC() method, if necessary
 
   V = voltageSensor.getVoltageAC();
-//  I = currentSensor.getCurrentAC();
+  //  I = currentSensor.getCurrentAC();
 
   Serial.println(String("V = ") + V + " V");
-//  Serial.println(String("I = ") + I + " A");
+  //  Serial.println(String("I = ") + I + " A");
 
   //LCD POWER DISPLAY
 
@@ -121,9 +121,10 @@ void loop()
     lcd.display();
     lcd.setCursor(0,0);
     lcd.print("OVER VOLTAGE");
-    delay(5000);
+    delay(3000);
     String message = "OVER VOLTAGE";
-//    sendSMS(message);  // send sms for overvoltage
+    sendSMS(message);  // send sms for overvoltage
+    delay(2000);
     gprsSendData();
   }
   else if(V <= 200){
@@ -134,9 +135,10 @@ void loop()
     lcd.display();
     lcd.setCursor(0,0);
     lcd.print("UNDER VOLTAGE");
-    delay(5000);
+    delay(3000);
     String message = "UNDER VOLTAGE";
-//    sendSMS(message);  // send sms for undervoltage
+    sendSMS(message);  // send sms for undervoltage
+    delay(2000);
     gprsSendData();
   }
   else{
@@ -170,18 +172,18 @@ void sendSMS(String message)
     Serial.println ("Sending Message");
     SIM900A.println("AT+CMGF=1");    //Sets the GSM Module in Text Mode
     delay(1000);
-    //ShowSerialData();
+    ShowSerialData();
     Serial.println ("Set SMS Number");
     SIM900A.println("AT+CMGS=\""+ String(phoneNumbers[i]) +"\"\r"); //Mobile phone number to send message
     delay(1000);
-    //ShowSerialData();
+    ShowSerialData();
     Serial.println ("Set SMS Content");
     SIM900A.println(String(message));// Messsage content
     delay(100);
     Serial.println ("Finish");
     SIM900A.println((char)26);// ASCII code of CTRL+Z
-    delay(1000);
-    //ShowSerialData();
+    delay(5000);
+    ShowSerialData();
     Serial.println ("Message has been sent to: " + String(phoneNumbers[i]));
   }
 }
@@ -203,9 +205,11 @@ void initHTTP()
   SIM900A.println(F("AT+SAPBR=3,1,\"APN\",\"m.vodacom.co.tz\""));  /* APN of the provider */
   delay(10000);
   ShowSerialData();
-  connectGSM("AT+SAPBR=1,1", "OK"); /* Open GPRS context */
+  SIM900A.println("AT+SAPBR=1,1"); /* Open GPRS context */
+  delay(6000);
   ShowSerialData();
-  connectGSM("AT+SAPBR=2,1", "OK"); /* Query the GPRS context */
+  SIM900A.println("AT+SAPBR=2,1"); /* Query the GPRS context */
+  delay(6000);
   ShowSerialData();
   connectGSM("AT+HTTPINIT","OK"); /* Initialize HTTP service */
   delay(1000); 
@@ -223,30 +227,17 @@ void gprsSendData()
 
   Serial.println("HTTP initialized ...");
   
-  // sample line
-  // Serial.println("AT+HTTPPARA=\"URL\",\"" + String(baseUrl) + "api/endpoint/?" +"par1=" + String(par1) + "&" + "par2=" + String(par2) + "/\"\\r\\n");
-  
-  SIM900A.println("AT+HTTPPARA=\"URL\",\"" + String(baseUrl) + "api/apiFaults/getAll/" + "\"");  // Set parameters for HTTP session !uncomment this if not testing 
-  // SIM900A.println("AT+HTTPPARA=\"URL\",\"" + String(testUrl) + "\"");  // test url ( get request ) !comment this if not testing
+  String _status = "Just+Received5";
+  String description = "Umeme+mdogo";
+  String type = "under+voltage";
+  String transformerId = "1";
+
+  Serial.println("AT+HTTPPARA=\"URL\",\"" + String(baseUrl) + "api/apiFaults/GenerateFaults/?" + "status=" + String(_status) + "&transfomerId=" + String(transformerId) + "&description=" + String(description) + "&type=" + String(type) + "\"");  // Set parameters for HTTP session !uncomment this if not testing 
+  SIM900A.println("AT+HTTPPARA=\"URL\",\"" + String(baseUrl) + "api/apiFaults/GenerateFaults/?" + "status=" + String(_status) + "&transfomerId=" + String(transformerId) + "&description=" + String(description) + "&type=" + String(type) + "\"");  // Set parameters for HTTP session !uncomment this if not testing 
   ShowSerialData();
   delay(1000);
-
-  // For posting data, uncomment below.
-  //  Serial.print("AT+HTTPDATA=33,10000\\r\\n");
-  //  SIM900.println("AT+HTTPDATA=33,10000");  /* POST data of size 33 Bytes with maximum latency time of 10seconds for inputting the data*/ 
-  //  delay(2000);
-  //  ShowSerialData();
-    
-  //  Serial.print("api_key=C7JFHZY54GLCJY38&field1=1\\r\\n");  /* Data to be sent */
-  //  SIM900.println("api_key=C7JFHZY54GLCJY38&field1=1");
-  //  delay(5000);
+ 
   
-  //  SIM900.println("AT+HTTPACTION=1");  /* Start POST session */
-  //  ShowSerialData();
-  //  delay(3000);
-   
-
-  // For post data comment below
   SIM900A.println(F("AT+HTTPACTION=0"));  /* Start GET session */
   ShowSerialData();
   delay(3000);
@@ -259,11 +250,11 @@ void gprsSendData()
   Serial.println(F("AT+HTTPTERM\\r\\n"));  
   SIM900A.println(F("AT+HTTPTERM"));  /* Terminate HTTP service */
   ShowSerialData();
-  delay(500);
+  delay(2000);
   
   SIM900A.println(F("AT+SAPBR=0,1")); /* Close GPRS context */
   ShowSerialData();
-  delay(100);
+  delay(2000);
 }
 
 
