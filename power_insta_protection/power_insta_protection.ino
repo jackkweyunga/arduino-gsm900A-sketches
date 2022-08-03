@@ -5,7 +5,6 @@
 #include <SoftwareSerial.h>   
 #define sensitivity 0.0093
 #define baseUrl "http://citse2022-001-site1.gtempurl.com/"
-#define testUrl "https://api.thingspeak.com/channels/119922/feeds/last.txt/"
 
 LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
 SoftwareSerial SIM900A(9,10); // SoftSerial arduino pins( RX , TX );   
@@ -13,6 +12,10 @@ SoftwareSerial SIM900A(9,10); // SoftSerial arduino pins( RX , TX );
 
 // Variable to store text message
 String textMessage;
+String _status = "Just+Received";
+String description;
+String type;
+String transformerId = "1";
 
 // We have ZMPT101B sensor connected to A0 pin of arduino
 // Replace with your version if necessary
@@ -26,8 +29,8 @@ ACS712 currentSensor(A1);
 int relayPin = 7;
 
 // Phone number
-char *phoneNumbers[] = {"+255712111936"};
-// char *phoneNumbers[] = {"+255653018568","+255713317205"};
+//char *phoneNumbers[] = {"+255712111936"};
+char *phoneNumbers[] = {"+255653018568","+255713317205"};
 
 int phoneNumbersLength;
 
@@ -58,10 +61,10 @@ void setup()
   delay(100);
   voltageSensor.setSensitivity(sensitivity);
   voltageSensor.calibrate();
-//  currentSensor.calibrate();
+  // currentSensor.calibrate();
   Serial.println("Done!");
 
-  //RELAY CONTROL
+  // RELAY CONTROL
   pinMode(relayPin, OUTPUT);
 
   // By default the relay is on
@@ -99,11 +102,11 @@ void loop()
   //  I = currentSensor.getCurrentAC();
 
   Serial.println(String("V = ") + V + " V");
-  //  Serial.println(String("I = ") + I + " A");
+  // Serial.println(String("I = ") + I + " A");
 
-  //LCD POWER DISPLAY
+  // LCD POWER DISPLAY
 
-  //Normal voltage
+  // Normal voltage
   lcd.clear();
   lcd.display();
   lcd.setCursor(0,0);
@@ -122,8 +125,10 @@ void loop()
     lcd.setCursor(0,0);
     lcd.print("OVER VOLTAGE");
     delay(3000);
-    String message = "OVER VOLTAGE";
-    sendSMS(message);  // send sms for overvoltage
+    textMessage = "OVER VOLTAGE";
+    description = "V:+"+ String(V) + "+I:+" + String(I);
+    type = "over+voltage";
+    sendSMS(textMessage);  // send sms for overvoltage
     delay(2000);
     gprsSendData();
   }
@@ -137,21 +142,15 @@ void loop()
     lcd.print("UNDER VOLTAGE");
     delay(3000);
     String message = "UNDER VOLTAGE";
-    sendSMS(message);  // send sms for undervoltage
+    description = "V: "+ String(V) + " I: " + String(I);
+    type = "under+voltage";
+    sendSMS(textMessage);  // send sms for undervoltage
     delay(2000);
     gprsSendData();
   }
   else{
     switchON();
     state = 1;
-    //normal voltage
-    // switchOFF();
-    // lcd.clear();
-    // lcd.display();
-    // lcd.setCursor(0,0);
-    // lcd.print("NORMAL VOLTAGE");
-    // String message = "NORMAL VOLTAGE";
-    // sendSMS(message);
    }
  }
 
@@ -226,18 +225,12 @@ void gprsSendData()
   initHTTP();
 
   Serial.println("HTTP initialized ...");
-  
-  String _status = "Just+Received5";
-  String description = "Umeme+mdogo";
-  String type = "under+voltage";
-  String transformerId = "1";
 
   Serial.println("AT+HTTPPARA=\"URL\",\"" + String(baseUrl) + "api/apiFaults/GenerateFaults/?" + "status=" + String(_status) + "&transfomerId=" + String(transformerId) + "&description=" + String(description) + "&type=" + String(type) + "\"");  // Set parameters for HTTP session !uncomment this if not testing 
   SIM900A.println("AT+HTTPPARA=\"URL\",\"" + String(baseUrl) + "api/apiFaults/GenerateFaults/?" + "status=" + String(_status) + "&transfomerId=" + String(transformerId) + "&description=" + String(description) + "&type=" + String(type) + "\"");  // Set parameters for HTTP session !uncomment this if not testing 
   ShowSerialData();
   delay(1000);
- 
-  
+   
   SIM900A.println(F("AT+HTTPACTION=0"));  /* Start GET session */
   ShowSerialData();
   delay(3000);
@@ -283,4 +276,6 @@ void connectGSM (String cmd, char *res)
     }
     delay(1000);
   }
-} 
+}
+
+ 
