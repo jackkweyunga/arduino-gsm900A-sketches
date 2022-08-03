@@ -1,5 +1,5 @@
-#include <ZMPT101B.h>
-#include <ACS712.h>
+#include "ZMPT101B.h"
+#include "ACS712.h"
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 #include <SoftwareSerial.h>   
@@ -21,9 +21,9 @@ String transformerId = "1";
 // Replace with your version if necessary
 ZMPT101B voltageSensor(A0);
 
-// We have 5 amps version sensor connected to A1 pin of arduino
+// We have 5 amps version sensor (ACS712_05B) connected to A1 pin of arduino
 // Replace with your version if necessary
-ACS712 currentSensor(A1);
+ACS712 currentSensor(ACS712_05B, A1);
 
 //RELAY SETUP
 int relayPin = 7;
@@ -61,7 +61,7 @@ void setup()
   delay(100);
   voltageSensor.setSensitivity(sensitivity);
   voltageSensor.calibrate();
-  // currentSensor.calibrate();
+  currentSensor.calibrate();
   Serial.println("Done!");
 
   // RELAY CONTROL
@@ -75,14 +75,14 @@ void setup()
 
   // Give time to your GSM shield log on to network
   delay(2000);
-  
+
   Serial.print("SIM900A ready...");
 
   // calculate the length of number array
   phoneNumbersLength = sizeof(phoneNumbers) / sizeof(phoneNumbers[0]);
   Serial.println("Found "+ String(phoneNumbersLength) +" phone numbers");
-  //  sendSMS("testing ...");
-  gprsSendData();  
+  // sendSMS("testing ...");
+  // gprsSendData();  
 }
 
 // main program loop
@@ -99,10 +99,10 @@ void loop()
   // as first argument to getVoltageAC and getCurrentAC() method, if necessary
 
   V = voltageSensor.getVoltageAC();
-  //  I = currentSensor.getCurrentAC();
+  I = currentSensor.getCurrentAC();
 
   Serial.println(String("V = ") + V + " V");
-  // Serial.println(String("I = ") + I + " A");
+  Serial.println(String("I = ") + I + " A");
 
   // LCD POWER DISPLAY
 
