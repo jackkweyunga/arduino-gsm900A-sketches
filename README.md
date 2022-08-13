@@ -1,1 +1,1 @@
-# Arduino sketches illustrating it's use with sim900A module
+# Arduino sketches illustrating sim900A module use cases in cellular IOT
